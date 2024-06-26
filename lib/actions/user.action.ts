@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-
 import { FilterQuery } from "mongoose";
 
 import User from "@/database/user.model";
@@ -60,23 +59,19 @@ export async function deleteUser(params: DeleteUserParams) {
 
     const { clerkId } = params;
 
-    const user = await User.findOneAndDelete({ clerkId });
+    // Find the user first
+    const user = await User.findOne({ clerkId });
 
     if (!user) {
       throw new Error("User not found");
     }
 
-    // get user question ids
-
-    // const userQuestionIds = await Question.find({ author: user._id }).distinct(
-    //   "_id"
-    // );
-
-    // delete user questions
+    // Delete user questions
     await Question.deleteMany({ author: user._id });
 
     // TODO: Delete user answers, comments, etc
 
+    // Delete the user
     const deletedUser = await User.findByIdAndDelete(user._id);
 
     return deletedUser;
